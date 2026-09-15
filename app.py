@@ -5,11 +5,154 @@ import pickle
 import plotly.graph_objects as go
 import io
 
-st.set_page_config(page_title="Customer Retention Platform", layout="wide", page_icon="🏢")
+# Page Config
+st.set_page_config(
+    page_title="RetainPulse | AI Churn & Retention Suite",
+    layout="wide",
+    page_icon="⚡",
+    initial_sidebar_state="collapsed"
+)
 
-# Title & Header
-st.title("🏢 Enterprise Churn & Retention Analytics Platform")
-st.markdown("Predict customer churn, identify root causes, and prescribe retention strategies.")
+# --- MODERN CUSTOM CSS (UI / UX STYLING) ---
+st.markdown("""
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+    
+    html, body, [class*="css"] {
+        font-family: 'Inter', sans-serif;
+    }
+    
+    /* Hero Header Container */
+    .hero-container {
+        background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%);
+        padding: 35px 30px;
+        border-radius: 16px;
+        color: white;
+        margin-bottom: 25px;
+        box-shadow: 0 10px 25px -5px rgba(67, 56, 202, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .hero-title {
+        font-size: 2.2rem;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        margin-bottom: 8px;
+        background: linear-gradient(to right, #ffffff, #c7d2fe);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    
+    .hero-subtitle {
+        font-size: 1.05rem;
+        color: #e0e7ff;
+        font-weight: 400;
+        max-width: 800px;
+        line-height: 1.5;
+    }
+    
+    .hero-badge {
+        display: inline-block;
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(8px);
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-bottom: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    /* Glassmorphism Card Containers */
+    .glass-card {
+        background: #ffffff;
+        padding: 24px;
+        border-radius: 14px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        margin-bottom: 20px;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .glass-card:hover {
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
+    }
+
+    /* Modern Pill Badges */
+    .badge-high {
+        background-color: #fee2e2;
+        color: #dc2626;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-weight: 700;
+        font-size: 0.85rem;
+        display: inline-block;
+        border: 1px solid #fecaca;
+    }
+    
+    .badge-medium {
+        background-color: #fef3c7;
+        color: #d97706;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-weight: 700;
+        font-size: 0.85rem;
+        display: inline-block;
+        border: 1px solid #fde68a;
+    }
+    
+    .badge-low {
+        background-color: #dcfce7;
+        color: #16a34a;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-weight: 700;
+        font-size: 0.85rem;
+        display: inline-block;
+        border: 1px solid #bbf7d0;
+    }
+
+    /* Action Card */
+    .action-card {
+        background: #f8fafc;
+        border-left: 4px solid #4f46e5;
+        padding: 16px;
+        border-radius: 8px;
+        margin-bottom: 12px;
+        font-size: 0.95rem;
+    }
+
+    /* Styled Action Button */
+    .stButton>button {
+        background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+        color: white;
+        font-weight: 600;
+        border: none;
+        border-radius: 10px;
+        padding: 12px 28px;
+        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        transition: all 0.2s ease;
+    }
+    
+    .stButton>button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(79, 70, 229, 0.4);
+    }
+</style>
+""", unsafe_allow_html=True)
+
+# --- HERO BANNER ---
+st.markdown("""
+<div class="hero-container">
+    <div class="hero-badge">⚡ AI-Powered Customer Intelligence</div>
+    <div class="hero-title">RetainPulse™ Retention & Churn Analytics</div>
+    <div class="hero-subtitle">
+        Evaluate customer churn probabilities in real time, extract game-theory root cause drivers (SHAP), and automatically generate tailored retention interventions.
+    </div>
+</div>
+""", unsafe_allow_html=True)
 
 # Load AI model
 @st.cache_resource
@@ -23,7 +166,6 @@ preprocessor = artifacts["preprocessor"]
 feature_names = artifacts["feature_names"]
 explainer = artifacts["explainer"]
 
-# Helper function for retention strategies
 def get_retention_actions(row, prob):
     if prob < 0.35:
         return "Customer loyal. Offer loyalty perks or feature upsells."
@@ -31,7 +173,7 @@ def get_retention_actions(row, prob):
     if row["ComplaintsCount"] >= 3:
         actions.append("Escalate to Senior Support (24h callback)")
     if row["Contract"] == "Month-to-month":
-        actions.append("Offer 15% discount for 1-year contract")
+        actions.append("Offer 15% discount for 1-year contract transition")
     if row["MonthlyCharges"] > 80:
         actions.append("Suggest plan optimization bundle")
     if row["LatePayments"] >= 2:
@@ -40,31 +182,35 @@ def get_retention_actions(row, prob):
         actions.append("Issue $10 courtesy loyalty credit")
     return " | ".join(actions)
 
-# Create 2 Tabs
-tab1, tab2 = st.tabs(["👤 Single Customer Analysis", "📁 Batch CSV Analysis (Bulk)"])
+tab1, tab2 = st.tabs(["👤 Individual Customer Diagnosis", "📁 Enterprise Batch Assessment"])
 
 # ==========================================
 # TAB 1: SINGLE CUSTOMER ANALYSIS
 # ==========================================
 with tab1:
+    st.markdown('<div class="glass-card">', unsafe_allow_html=True)
+    st.subheader("📋 Customer Attributes & Telemetry")
+    
     col1, col2, col3 = st.columns(3)
     with col1:
-        st.markdown("**Profile**")
+        st.markdown("**👤 Demographics**")
         name = st.text_input("Customer Name", value="Alex Morgan")
         age = st.slider("Age", 18, 80, 42)
         tenure = st.slider("Tenure (Months with Company)", 1, 72, 8)
 
     with col2:
-        st.markdown("**Subscription & Usage**")
-        contract = st.selectbox("Contract", ["Month-to-month", "One year", "Two year"])
+        st.markdown("**📄 Subscription & Telemetry**")
+        contract = st.selectbox("Contract Type", ["Month-to-month", "One year", "Two year"])
         internet = st.selectbox("Internet Service", ["Fiber optic", "DSL", "No"])
         data_usage = st.number_input("Monthly Data Usage (GB)", value=210.0, step=10.0)
 
     with col3:
-        st.markdown("**Billing & Complaints**")
+        st.markdown("**💳 Financials & Support Tickets**")
         monthly_charges = st.number_input("Monthly Bill ($)", value=98.0, step=5.0)
         late_payments = st.slider("Late Payments Count", 0, 5, 1)
-        complaints = st.slider("Support Complaints", 0, 10, 4)
+        complaints = st.slider("Support Interactions / Complaints", 0, 10, 4)
+
+    st.markdown('</div>', unsafe_allow_html=True)
 
     input_df = pd.DataFrame([{
         "Age": age, "TenureMonths": tenure, "Contract": contract,
@@ -73,7 +219,7 @@ with tab1:
         "ComplaintsCount": complaints
     }])
 
-    if st.button("🚀 Analyze Single Customer", type="primary"):
+    if st.button("🚀 Run Risk & Retention Diagnosis", type="primary"):
         # Prediction
         processed = preprocessor.transform(input_df)
         prob = float(model.predict_proba(processed)[0][1])
@@ -87,68 +233,89 @@ with tab1:
                 reasons.append((clean_f, val))
         reasons = sorted(reasons, key=lambda x: x[1], reverse=True)[:3]
 
-        # Display results
+        # Results Display
+        st.markdown('<div class="glass-card">', unsafe_allow_html=True)
         r_col1, r_col2 = st.columns([1, 1.2])
+
         with r_col1:
-            st.subheader("Churn Risk Gauge")
+            st.markdown("### 📊 Churn Probability")
+            if prob >= 0.70:
+                st.markdown('<span class="badge-high">🚨 CRITICAL RISK (High Churn)</span>', unsafe_allow_html=True)
+            elif prob >= 0.40:
+                st.markdown('<span class="badge-medium">⚡ ELEVATED RISK (Monitor)</span>', unsafe_allow_html=True)
+            else:
+                st.markdown('<span class="badge-low">✅ HEALTHY (Low Churn)</span>', unsafe_allow_html=True)
+
             fig = go.Figure(go.Indicator(
                 mode="gauge+number",
                 value=prob * 100,
-                number={'suffix': "%"},
+                number={'suffix': "%", 'font': {'color': "#1e1b4b", 'size': 42}},
                 gauge={
-                    'axis': {'range': [0, 100]},
-                    'bar': {'color': "#EF4444" if prob > 0.5 else "#10B981"},
+                    'axis': {'range': [0, 100], 'tickwidth': 1, 'tickcolor': "#cbd5e1"},
+                    'bar': {'color': "#ef4444" if prob > 0.5 else "#10b981"},
+                    'bgcolor': "white",
                     'steps': [
-                        {'range': [0, 40], 'color': "#D1FAE5"},
-                        {'range': [40, 70], 'color': "#FEF3C7"},
-                        {'range': [70, 100], 'color': "#FEE2E2"}
+                        {'range': [0, 40], 'color': "#f0fdf4"},
+                        {'range': [40, 70], 'color': "#fffbeb"},
+                        {'range': [70, 100], 'color': "#fef2f2"}
                     ]
                 }
             ))
-            fig.update_layout(height=240, margin=dict(l=10, r=10, t=30, b=10))
+            fig.update_layout(height=230, margin=dict(l=15, r=15, t=20, b=10))
             st.plotly_chart(fig, use_container_width=True)
 
         with r_col2:
-            st.subheader("🔍 Primary Drivers For Risk")
+            st.markdown("### 🔍 Root-Cause Attribution (SHAP)")
+            st.write("Specific attributes pushing this customer toward churn:")
             if reasons:
                 for r, v in reasons:
-                    st.write(f"• **{r}** is pushing the churn risk higher.")
+                    st.markdown(f"""
+                    <div style="background: #f1f5f9; padding: 10px 14px; border-radius: 8px; margin-bottom: 8px; border-left: 3px solid #6366f1;">
+                        <strong>{r}</strong> &nbsp;—&nbsp; <span style="color: #dc2626; font-weight:600;">+{v:.2f} Risk Impact</span>
+                    </div>
+                    """, unsafe_allow_html=True)
             else:
-                st.write("No severe risk factors.")
+                st.info("No adverse churn drivers detected. All metrics within healthy thresholds.")
 
-        st.divider()
+        st.markdown('</div>', unsafe_allow_html=True)
 
-        # Retention Action & Ready Email Draft
-        st.subheader("✉️ Auto-Drafted Retention Email")
+        # Retention Action & Outreach Plan
+        st.markdown('<div class="glass-card">', unsafe_allow_html=True)
+        st.markdown("### 💡 Prescribed Retention Strategy & Draft Email")
         retention_advice = get_retention_actions(input_df.iloc[0], prob)
         
-        st.info(f"**Recommended Action:** {retention_advice}")
+        st.markdown(f"""
+        <div class="action-card">
+            <strong>🎯 Recommended Tactical Intervention:</strong><br/>
+            {retention_advice}
+        </div>
+        """, unsafe_allow_html=True)
 
-        # Email draft
-        email_body = f"""Subject: Special Offer & Personal Check-in from your Customer Success Team
+        email_body = f"""Subject: Dedicated Check-in & Special Consideration from Customer Success
 
 Dear {name},
 
-We noticed you've recently had to reach out to our support team {complaints} time(s). We sincerely apologize if any experience fell short of your expectations.
+We noticed you've recently had to reach out to our support department {complaints} time(s). We want to personally apologize if any service aspect didn't meet your standard.
 
-Because we value your partnership with us, we would love to offer you:
-👉 A complimentary review of your account to optimize your ${monthly_charges:.2f}/month plan, plus a 15% loyalty credit.
+Because we deeply value your partnership with us, we'd like to extend:
+👉 A complimentary review of your account to optimize your ${monthly_charges:.2f}/month plan, along with a 15% loyalty credit applied to your next cycle.
 
-Please reply directly to this email or pick a time with our dedicated specialist. We are here to help!
+Please reply directly to this message or schedule time with our senior retention specialist.
 
 Warm regards,
-Customer Success Team"""
+Customer Success Operations"""
 
-        st.text_area("Copy-paste ready email for your support team:", value=email_body, height=220)
+        st.text_area("Ready-to-Send Retention Outreach Draft:", value=email_body, height=210)
+        st.markdown('</div>', unsafe_allow_html=True)
 
 # ==========================================
 # TAB 2: BATCH CSV ANALYSIS
 # ==========================================
 with tab2:
-    st.subheader("📁 Upload Customer List (CSV)")
-    st.write("Upload your customer records to identify all high-risk accounts and export an action plan.")
+    st.markdown('<div class="glass-card">', unsafe_allow_html=True)
+    st.subheader("📁 Bulk Account Risk Evaluation")
+    st.write("Upload an account roster in CSV format to rank high-risk customers and download an operational intervention list.")
 
-    # Button to download a sample template
     sample_data = pd.DataFrame({
         "CustomerID": ["C-101", "C-102", "C-103", "C-104", "C-105"],
         "CustomerName": ["Sarah Connor", "John Doe", "Emma Watson", "Bruce Wayne", "Clark Kent"],
@@ -165,18 +332,16 @@ with tab2:
     csv_buffer = io.StringIO()
     sample_data.to_csv(csv_buffer, index=False)
     st.download_button(
-        label="📥 Download Sample CSV Template",
+        label="📥 Download Sample Batch Template (CSV)",
         data=csv_buffer.getvalue(),
         file_name="sample_customers.csv",
         mime="text/csv"
     )
 
-    uploaded_file = st.file_uploader("Upload CSV file", type=["csv"])
+    uploaded_file = st.file_uploader("Upload CSV File", type=["csv"])
 
     if uploaded_file is not None:
         batch_df = pd.read_csv(uploaded_file)
-        
-        # Keep copy for predictions
         predict_cols = ["Age", "TenureMonths", "Contract", "InternetService", "MonthlyDataGB", "MonthlyCharges", "LatePayments", "ComplaintsCount"]
         
         try:
@@ -193,21 +358,18 @@ with tab2:
                 get_retention_actions(row, p/100) for row, p in zip(batch_df.to_dict('records'), batch_df["ChurnProbability"])
             ]
 
-            # Summary Metrics
             m1, m2, m3 = st.columns(3)
             high_risk_count = (batch_df["RiskLevel"] == "High Risk").sum()
             med_risk_count = (batch_df["RiskLevel"] == "Medium Risk").sum()
             low_risk_count = (batch_df["RiskLevel"] == "Low Risk").sum()
 
-            m1.metric("🚨 High Risk Customers", high_risk_count)
-            m2.metric("⚡ Medium Risk Customers", med_risk_count)
-            m3.metric("✅ Low Risk Customers", low_risk_count)
+            m1.metric("🚨 High Risk", high_risk_count)
+            m2.metric("⚡ Medium Risk", med_risk_count)
+            m3.metric("✅ Low Risk", low_risk_count)
 
-            # Sort so most endangered customers appear at the top
             sorted_df = batch_df.sort_values(by="ChurnProbability", ascending=False)
-            st.dataframe(sorted_df[["CustomerID", "CustomerName", "ChurnProbability", "RiskLevel", "SuggestedAction", "MonthlyCharges", "ComplaintsCount"]])
+            st.dataframe(sorted_df[["CustomerID", "CustomerName", "ChurnProbability", "RiskLevel", "SuggestedAction", "MonthlyCharges", "ComplaintsCount"]], use_container_width=True)
 
-            # Export button
             export_csv = io.StringIO()
             sorted_df.to_csv(export_csv, index=False)
             st.download_button(
@@ -218,4 +380,6 @@ with tab2:
             )
 
         except Exception as e:
-            st.error(f"Error processing file. Make sure columns match the template! Error: {e}")
+            st.error(f"Error parsing file: {e}")
+
+    st.markdown('</div>', unsafe_allow_html=True)
